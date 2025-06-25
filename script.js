@@ -600,6 +600,15 @@ switch (selector) {
       playerCountDisplay.textContent = `Spieler online: ${clientCount}`;
     }
     break;
+      case 'begin':
+      const beginData = incoming[1];
+      const ctx2 = contextMap[beginData.canvasNum];
+        if (ctx2) {
+        ctx2.beginPath();
+        ctx2.moveTo(beginData.x, beginData.y);
+      }
+      break;
+      
       case 'draw':
         const drawData = incoming[1];
         const { canvasNum, x, y } = drawData;
@@ -621,14 +630,6 @@ switch (selector) {
         console.log(`client #${exitId} has left the room`);
         break;
       
-      case 'begin':
-      const beginData = incoming[1];
-      const ctx2 = contextMap[beginData.canvasNum];
-        if (ctx2) {
-        ctx2.beginPath();
-        ctx2.moveTo(beginData.x, beginData.y);
-      }
-      break;
 
       // 'hello there' messages sent from other clients
       case 'hello-there':
