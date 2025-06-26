@@ -488,8 +488,7 @@ function showPlaneByKey(key) {
       const pos = getCanvasCoords(canvas, e);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
-      sendRequest('draw-start', num, pos.x, pos.y);
-
+      sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y]);
     };
 
     canvas.onmouseup = () => zeichnen = false;
@@ -500,25 +499,8 @@ function showPlaneByKey(key) {
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
       updatePlaneTexture(num);
+      sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y]);
     };
-
-    // Zeichnung übertragen
-sendRequest('draw-line', aktiveNummer, pos.x, pos.y);
-
-canvas.onmousemove = (e) => {
-  if (!zeichnen) return;
-  const pos = getCanvasCoords(canvas, e);
-  ctx.lineTo(pos.x, pos.y);
-  ctx.stroke();
-  updatePlaneTexture(num);
-
-  // NEU: Zeichen-Daten an andere Clients senden
-  sendRequest('draw-line', num, pos.x, pos.y);
-};
-
-
-
-
   }
 
 
@@ -578,6 +560,8 @@ socket.addEventListener('open', (event) => {
   sendRequest('*enter-room*', 'i-bau-graffiti');
   sendRequest('*subscribe-client-count*');
   sendRequest('*subscribe-client-enter-exit*');
+  sendRequest('*broadcast-message*', ['draw-line', num, x, y]);
+  sendRequest('*broadcast-message*', ['draw-start', num, x, y]);
 
   // ping the server regularly with an empty message to prevent the socket from closing
   setInterval(() => socket.send(''), 30000);
@@ -596,26 +580,9 @@ socket.addEventListener('message', (event) => {
     const incoming = JSON.parse(data);
     const selector = incoming[0];
 
-    
-
     // dispatch incomming messages
 
 switch (selector) {
-  case 'draw-line': {
-  const canvasNum = incoming[1];
-  const x = incoming[2];
-  const y = incoming[3];
-
-  const ctx = contextMap[canvasNum];
-  if (!ctx) break;
-
-  // Neue Linie von letzter Position zum Punkt x,y
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  updatePlaneTexture(canvasNum);
-  break;
-}
-
   // responds to '*client-count*'
   case '*client-count*':
     clientCount = incoming[1];
@@ -627,25 +594,32 @@ switch (selector) {
       playerCountDisplay.textContent = `Spieler online: ${clientCount}`;
     }
     break;
-
+      case 'draw-line': {
+        const num = incoming[1];
+        const x = incoming[2];
+        const y = incoming[3];
+        const ctx = contextMap[num];
+        if (ctx) {
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
+        break;
+      }
+      case 'draw-start': {
+        const num = incoming[1];
+        const x = incoming[2];
+        const y = incoming[3];
+        const ctx = contextMap[num];
+        if (ctx) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+        }
+        break;
+      }
       case '*client-enter*':
         const enterId = incoming[1];
         console.log(`client #${enterId} has entered the room`);
         break;
-
-        case 'draw-start': {
-        const canvasNum = incoming[1];
-        const x = incoming[2];
-        const y = incoming[3];
-
-        const ctx = contextMap[canvasNum];
-        if (!ctx) break;
-
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        break;
-        }
-
 
       case '*client-exit*':
         const exitId = incoming[1];
