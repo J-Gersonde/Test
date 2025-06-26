@@ -462,6 +462,18 @@ function showPlaneByKey(key) {
     updatePlaneTexture(num);
   }
 
+  // Hilfsfunktion: Canvas-Sync anfordern (z.B. bei neuem Client)
+  function requestCanvasSync() {
+    sendRequest('request-canvas-sync');
+  }
+
+  // Wenn ein Client eine Sync-Anfrage bekommt, sendet er sein Canvas
+  function handleRequestCanvasSync() {
+    Object.keys(canvasMap).forEach(num => {
+      sendCanvasSync(num);
+    });
+  }
+
   // Hilfsfunktion: Canvas als Bild synchronisieren
   function sendCanvasSync(num) {
     const canvas = canvasMap[num];
@@ -533,20 +545,11 @@ function showPlaneByKey(key) {
         sendDrawCommand(num, lastPos, pos);
       }
       lastPos = pos;
-      // Nach jedem Zeichnen: komplettes Canvas synchronisieren
-      sendCanvasSync(num);
+      // KEIN sendCanvasSync(num) mehr hier!
     };
   }
 
-  function updatePlaneTexture(num) {
-    const plane = document.querySelector(`#plane${num}`);
-    const mesh = plane.getObject3D('mesh');
-    if (mesh && mesh.material.map) {
-      mesh.material.map.needsUpdate = true;
-    }
-  }
-
-// Canvas auswählen und überprüfen zum Zeichnen
+  // Canvas auswählen und überprüfen zum Zeichnen
 document.addEventListener("keydown", (event) => {
   if (!zeichenModusAktiv) return;
 
@@ -574,6 +577,9 @@ setInterval(() => {
   });
   console.log("Alle Canvases wurden automatisch geleert.");
 }, 300000); 
+
+// Nach dem Laden: Canvas-Sync anfordern
+requestCanvasSync();
 
 /****************************************************************
  * websocket communication
@@ -661,7 +667,10 @@ switch (selector) {
         applyCanvasSync(num, dataUrl);
         break;
       }
-
+      case 'request-canvas-sync': {
+        handleRequestCanvasSync();
+        break;
+      }
       default:
         console.log(`unknown incoming messsage: [${incoming}]`);
         break;
