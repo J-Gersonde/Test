@@ -26,7 +26,7 @@ function highlightText(elem) {
 
   setTimeout(() => {
     elem.classList.remove('highlight-text');
-  }, 120000);
+  }, 120);
 }
 
 /****************************************************************
