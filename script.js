@@ -444,32 +444,14 @@ function showPlaneByKey(key) {
   const contextMap = {};
   let aktiveNummer = null;
   let zeichnen = false;
-  let lastPos = null; // Für Synchronisation
-
-  // Hilfsfunktion: Canvas als Bild synchronisieren
-  function sendCanvasSync(num) {
-    const canvas = canvasMap[num];
-    const dataUrl = canvas.toDataURL();
-    sendRequest('canvas-sync', { num, dataUrl });
-  }
-
-  // Empfangenes Canvas-Bild anwenden
-  function applyCanvasSync(num, dataUrl) {
-    const ctx = contextMap[num];
-    const img = new window.Image();
-    img.onload = function() {
-      ctx.clearRect(0, 0, canvasMap[num].width, canvasMap[num].height);
-      ctx.drawImage(img, 0, 0);
-      updatePlaneTexture(num);
-    };
-    img.src = dataUrl;
-  }
 
   for (const [num, canvas] of Object.entries(canvasMap)) {
     const ctx = canvas.getContext("2d");
+
     // Hintergrund weiß setzen
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
     contextMap[num] = ctx;
@@ -485,40 +467,70 @@ function showPlaneByKey(key) {
 
   function toggleCanvas(num) {
     const canvas = canvasMap[num];
+
     if (aktiveNummer === num) {
       canvas.style.display = "none";
       aktiveNummer = null;
       return;
     }
+
     if (aktiveNummer) {
       canvasMap[aktiveNummer].style.display = "none";
     }
+
     aktiveNummer = num;
     canvas.style.display = "block";
+
     const ctx = contextMap[num];
+
     canvas.onmousedown = (e) => {
       zeichnen = true;
-      lastPos = getCanvasCoords(canvas, e);
+      const pos = getCanvasCoords(canvas, e);
       ctx.beginPath();
-      ctx.moveTo(lastPos.x, lastPos.y);
+      ctx.moveTo(pos.x, pos.y);
+      sendRequest('draw-start', num, pos.x, pos.y);
+
     };
-    canvas.onmouseup = () => {
-      zeichnen = false;
-      lastPos = null;
-    };
+
+    canvas.onmouseup = () => zeichnen = false;
+
     canvas.onmousemove = (e) => {
       if (!zeichnen) return;
       const pos = getCanvasCoords(canvas, e);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
       updatePlaneTexture(num);
-      lastPos = pos;
-      // Nach jedem Zeichnen: komplettes Canvas synchronisieren
-      sendCanvasSync(num);
     };
+
+    // Zeichnung übertragen
+sendRequest('draw-line', aktiveNummer, pos.x, pos.y);
+
+canvas.onmousemove = (e) => {
+  if (!zeichnen) return;
+  const pos = getCanvasCoords(canvas, e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  updatePlaneTexture(num);
+
+  // NEU: Zeichen-Daten an andere Clients senden
+  sendRequest('draw-line', num, pos.x, pos.y);
+};
+
+
+
+
   }
 
-  // Canvas auswählen und überprüfen zum Zeichnen
+
+  function updatePlaneTexture(num) {
+    const plane = document.querySelector(`#plane${num}`);
+    const mesh = plane.getObject3D('mesh');
+    if (mesh && mesh.material.map) {
+      mesh.material.map.needsUpdate = true;
+    }
+  }
+
+// Canvas auswählen und überprüfen zum Zeichnen
 document.addEventListener("keydown", (event) => {
   if (!zeichenModusAktiv) return;
 
@@ -534,21 +546,19 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// Alle 5 Minuten Canvas clearen
+  // Alle 5 Minuten Canvas clearen
 setInterval(() => {
   Object.entries(contextMap).forEach(([num, ctx]) => {
     ctx.clearRect(0, 0, canvasMap[num].width, canvasMap[num].height);
+
+    // Hintergrund wieder weiß setzen
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvasMap[num].width, canvasMap[num].height);
+
     updatePlaneTexture(num);
-    // Nach jedem Clear: komplettes Canvas synchronisieren
-    sendCanvasSync(num);
   });
   console.log("Alle Canvases wurden automatisch geleert.");
 }, 300000); 
-
-// Nach dem Laden: Canvas-Sync anfordern
-requestCanvasSync();
 
 /****************************************************************
  * websocket communication
@@ -586,9 +596,26 @@ socket.addEventListener('message', (event) => {
     const incoming = JSON.parse(data);
     const selector = incoming[0];
 
+    
+
     // dispatch incomming messages
 
 switch (selector) {
+  case 'draw-line': {
+  const canvasNum = incoming[1];
+  const x = incoming[2];
+  const y = incoming[3];
+
+  const ctx = contextMap[canvasNum];
+  if (!ctx) break;
+
+  // Neue Linie von letzter Position zum Punkt x,y
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  updatePlaneTexture(canvasNum);
+  break;
+}
+
   // responds to '*client-count*'
   case '*client-count*':
     clientCount = incoming[1];
@@ -605,6 +632,20 @@ switch (selector) {
         const enterId = incoming[1];
         console.log(`client #${enterId} has entered the room`);
         break;
+
+        case 'draw-start': {
+        const canvasNum = incoming[1];
+        const x = incoming[2];
+        const y = incoming[3];
+
+        const ctx = contextMap[canvasNum];
+        if (!ctx) break;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        break;
+        }
+
 
       case '*client-exit*':
         const exitId = incoming[1];
@@ -625,15 +666,6 @@ switch (selector) {
         break;
       }
 
-      case 'canvas-sync': {
-        const { num, dataUrl } = incoming[1];
-        applyCanvasSync(num, dataUrl);
-        break;
-      }
-      case 'request-canvas-sync': {
-        handleRequestCanvasSync();
-        break;
-      }
       default:
         console.log(`unknown incoming messsage: [${incoming}]`);
         break;
