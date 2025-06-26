@@ -446,34 +446,6 @@ function showPlaneByKey(key) {
   let zeichnen = false;
   let lastPos = null; // Für Synchronisation
 
-  // Hilfsfunktion: Zeichenbefehl senden
-  function sendDrawCommand(num, from, to) {
-    sendRequest('draw-cmd', { num, from, to });
-  }
-
-  // Zeichenbefehl empfangen und ausführen
-  function applyDrawCommand(num, from, to) {
-    const ctx = contextMap[num];
-    if (!ctx) return;
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
-    updatePlaneTexture(num);
-  }
-
-  // Hilfsfunktion: Canvas-Sync anfordern (z.B. bei neuem Client)
-  function requestCanvasSync() {
-    sendRequest('request-canvas-sync');
-  }
-
-  // Wenn ein Client eine Sync-Anfrage bekommt, sendet er sein Canvas
-  function handleRequestCanvasSync() {
-    Object.keys(canvasMap).forEach(num => {
-      sendCanvasSync(num);
-    });
-  }
-
   // Hilfsfunktion: Canvas als Bild synchronisieren
   function sendCanvasSync(num) {
     const canvas = canvasMap[num];
@@ -540,12 +512,9 @@ function showPlaneByKey(key) {
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
       updatePlaneTexture(num);
-      // Synchronisation: Zeichenbefehl senden
-      if (lastPos) {
-        sendDrawCommand(num, lastPos, pos);
-      }
       lastPos = pos;
-      // KEIN sendCanvasSync(num) mehr hier!
+      // Nach jedem Zeichnen: komplettes Canvas synchronisieren
+      sendCanvasSync(num);
     };
   }
 
@@ -653,12 +622,6 @@ switch (selector) {
       case '*error*': {
         const message = incoming[1];
         console.warn('server error:', ...message);
-        break;
-      }
-
-      case 'draw-cmd': {
-        const { num, from, to } = incoming[1];
-        applyDrawCommand(num, from, to);
         break;
       }
 
