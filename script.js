@@ -486,25 +486,29 @@ function showPlaneByKey(key) {
 
     const ctx = contextMap[num];
 
-    canvas.onmousedown = (e) => {
-      zeichnen = true;
-      const pos = getCanvasCoords(canvas, e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y]);
-    };
+    // Beim Senden:
+canvas.onmousedown = (e) => {
+  zeichnen = true;
+  const pos = getCanvasCoords(canvas, e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+  // Lokal zeichnen
+  lastPositions[`${clientId}_${num}`] = { x: pos.x, y: pos.y };
+  // An andere senden
+  sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y, clientId]);
+};
 
-    canvas.onmouseup = () => zeichnen = false;
+  canvas.onmouseup = () => zeichnen = false;
 
-    canvas.onmousemove = (e) => {
-      if (!zeichnen) return;
-      const pos = getCanvasCoords(canvas, e);
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, 2, 0, 2 * Math.PI); // kleiner Kreis
-      ctx.fill();
-      updatePlaneTexture(num);
-      sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y]);
-    };
+  canvas.onmousemove = (e) => {
+  if (!zeichnen) return;
+  const pos = getCanvasCoords(canvas, e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  updatePlaneTexture(num);
+  lastPositions[`${clientId}_${num}`] = { x: pos.x, y: pos.y };
+  sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y, clientId]);
+};
   }
 
 
@@ -564,8 +568,7 @@ socket.addEventListener('open', (event) => {
   sendRequest('*enter-room*', 'i-bau-graffiti');
   sendRequest('*subscribe-client-count*');
   sendRequest('*subscribe-client-enter-exit*');
-  sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y, clientId]);
-  sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y, clientId]);
+
   // ping the server regularly with an empty message to prevent the socket from closing
   setInterval(() => socket.send(''), 30000);
 });
@@ -597,44 +600,48 @@ switch (selector) {
       playerCountDisplay.textContent = `Spieler online: ${clientCount}`;
     }
     break;
-            case 'draw-line': {
-        const canvasNum = incoming[1];
-        const x = incoming[2];
-        const y = incoming[3];
-        const senderId = incoming[4] || 'remote';
-      
-        const ctx = contextMap[canvasNum];
-        if (!ctx) break;
-      
-        // Prüfe, ob ein Pfad existiert, sonst beginne einen neuen
-        if (!lastPositions[`${senderId}_${canvasNum}`]) {
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-        }
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        lastPositions[`${senderId}_${canvasNum}`] = { x, y };
-        updatePlaneTexture(canvasNum);
-        break;
-      }
-            case 'draw-start': {
-        const canvasNum = incoming[1];
-        const x = incoming[2];
-        const y = incoming[3];
-        const senderId = incoming[4] || 'remote'; // falls du die ID mitsendest
-      
-        const ctx = contextMap[canvasNum];
-        if (!ctx) break;
-      
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        lastPositions[`${senderId}_${canvasNum}`] = { x, y };
-        break;
-      }
+ //Beim Empfangen:
+case 'draw-start': {
+  const canvasNum = incoming[1];
+  const x = incoming[2];
+  const y = incoming[3];
+  const senderId = incoming[4];
+  // Eigene Nachrichten ignorieren
+  if (senderId === clientId) break;
+  const ctx = contextMap[canvasNum];
+  if (!ctx) break;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  lastPositions[`${senderId}_${canvasNum}`] = { x, y };
+  break;
+}
+case 'draw-line': {
+  const canvasNum = incoming[1];
+  const x = incoming[2];
+  const y = incoming[3];
+  const senderId = incoming[4];
+  if (senderId === clientId) break;
+  const ctx = contextMap[canvasNum];
+  if (!ctx) break;
+  // Optional: falls kein Pfad existiert, beginne einen neuen
+  if (!lastPositions[`${senderId}_${canvasNum}`]) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  }
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  updatePlaneTexture(canvasNum);
+  lastPositions[`${senderId}_${canvasNum}`] = { x, y };
+  break;
+}
       case '*client-enter*':
         const enterId = incoming[1];
         console.log(`client #${enterId} has entered the room`);
         break;
+
+        case '*client-id*':
+      clientId = incoming[1];
+      break;
 
       case '*client-exit*':
         const exitId = incoming[1];
