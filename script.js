@@ -462,6 +462,25 @@ function showPlaneByKey(key) {
     updatePlaneTexture(num);
   }
 
+  // Hilfsfunktion: Canvas als Bild synchronisieren
+  function sendCanvasSync(num) {
+    const canvas = canvasMap[num];
+    const dataUrl = canvas.toDataURL();
+    sendRequest('canvas-sync', { num, dataUrl });
+  }
+
+  // Empfangenes Canvas-Bild anwenden
+  function applyCanvasSync(num, dataUrl) {
+    const ctx = contextMap[num];
+    const img = new window.Image();
+    img.onload = function() {
+      ctx.clearRect(0, 0, canvasMap[num].width, canvasMap[num].height);
+      ctx.drawImage(img, 0, 0);
+      updatePlaneTexture(num);
+    };
+    img.src = dataUrl;
+  }
+
   for (const [num, canvas] of Object.entries(canvasMap)) {
     const ctx = canvas.getContext("2d");
     // Hintergrund weiß setzen
@@ -514,6 +533,8 @@ function showPlaneByKey(key) {
         sendDrawCommand(num, lastPos, pos);
       }
       lastPos = pos;
+      // Nach jedem Zeichnen: komplettes Canvas synchronisieren
+      sendCanvasSync(num);
     };
   }
 
@@ -545,12 +566,11 @@ document.addEventListener("keydown", (event) => {
 setInterval(() => {
   Object.entries(contextMap).forEach(([num, ctx]) => {
     ctx.clearRect(0, 0, canvasMap[num].width, canvasMap[num].height);
-
-    // Hintergrund wieder weiß setzen
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvasMap[num].width, canvasMap[num].height);
-
     updatePlaneTexture(num);
+    // Nach jedem Clear: komplettes Canvas synchronisieren
+    sendCanvasSync(num);
   });
   console.log("Alle Canvases wurden automatisch geleert.");
 }, 300000); 
@@ -633,6 +653,12 @@ switch (selector) {
       case 'draw-cmd': {
         const { num, from, to } = incoming[1];
         applyDrawCommand(num, from, to);
+        break;
+      }
+
+      case 'canvas-sync': {
+        const { num, dataUrl } = incoming[1];
+        applyCanvasSync(num, dataUrl);
         break;
       }
 
