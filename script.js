@@ -1,5 +1,8 @@
 let zeichenModusAktiv = false;
 
+// Am Anfang des Skripts:
+const lastPositions = {}; // z.B. { [clientId_canvasNum]: {x, y} }
+
 const infoDisplay = document.getElementById('info-display');
 
 // address of the WebSocket server
@@ -561,9 +564,8 @@ socket.addEventListener('open', (event) => {
   sendRequest('*enter-room*', 'i-bau-graffiti');
   sendRequest('*subscribe-client-count*');
   sendRequest('*subscribe-client-enter-exit*');
-  sendRequest('*broadcast-message*', ['draw-line', num, x, y]);
-  sendRequest('*broadcast-message*', ['draw-start', num, x, y]);
-
+  sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y, clientId]);
+  sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y, clientId]);
   // ping the server regularly with an empty message to prevent the socket from closing
   setInterval(() => socket.send(''), 30000);
 });
@@ -595,26 +597,38 @@ switch (selector) {
       playerCountDisplay.textContent = `Spieler online: ${clientCount}`;
     }
     break;
-      case 'draw-line': {
-        const num = incoming[1];
+            case 'draw-line': {
+        const canvasNum = incoming[1];
         const x = incoming[2];
         const y = incoming[3];
-        const ctx = contextMap[num];
-        if (ctx) {
-          ctx.arc(pos.x, pos.y, 2, 0, 2 * Math.PI); // kleiner Kreis
-          ctx.fill();
-        updatePlaneTexture(num);
+        const senderId = incoming[4] || 'remote';
+      
+        const ctx = contextMap[canvasNum];
+        if (!ctx) break;
+      
+        // Prüfe, ob ein Pfad existiert, sonst beginne einen neuen
+        if (!lastPositions[`${senderId}_${canvasNum}`]) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
         }
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastPositions[`${senderId}_${canvasNum}`] = { x, y };
+        updatePlaneTexture(canvasNum);
         break;
       }
-      case 'draw-start': {
-        const num = incoming[1];
+            case 'draw-start': {
+        const canvasNum = incoming[1];
         const x = incoming[2];
         const y = incoming[3];
-        const ctx = contextMap[num];
-        if (ctx) {
-          ctx.beginPath();
-          ctx.moveTo(x, y);        }
+        const senderId = incoming[4] || 'remote'; // falls du die ID mitsendest
+      
+        const ctx = contextMap[canvasNum];
+        if (!ctx) break;
+      
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        lastPositions[`${senderId}_${canvasNum}`] = { x, y };
         break;
       }
       case '*client-enter*':
