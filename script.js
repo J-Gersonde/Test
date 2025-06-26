@@ -496,8 +496,9 @@ function showPlaneByKey(key) {
     canvas.onmousemove = (e) => {
       if (!zeichnen) return;
       const pos = getCanvasCoords(canvas, e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 2, 0, 2 * Math.PI); // kleiner Kreis
+      ctx.fill();
       updatePlaneTexture(num);
       sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y]);
     };
@@ -600,8 +601,8 @@ switch (selector) {
         const y = incoming[3];
         const ctx = contextMap[num];
         if (ctx) {
-          ctx.lineTo(x, y);
-          ctx.stroke();
+          ctx.arc(pos.x, pos.y, 2, 0, 2 * Math.PI); // kleiner Kreis
+          ctx.fill();
         updatePlaneTexture(num);
         }
         break;
