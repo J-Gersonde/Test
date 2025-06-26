@@ -602,6 +602,7 @@ switch (selector) {
         if (ctx) {
           ctx.lineTo(x, y);
           ctx.stroke();
+        updatePlaneTexture(num);
         }
         break;
       }
@@ -612,8 +613,7 @@ switch (selector) {
         const ctx = contextMap[num];
         if (ctx) {
           ctx.beginPath();
-          ctx.moveTo(x, y);
-        }
+          ctx.moveTo(x, y);        }
         break;
       }
       case '*client-enter*':
