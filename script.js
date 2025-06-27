@@ -1,17 +1,6 @@
 let zeichenModusAktiv = false;
 
-// Am Anfang des Skripts:
-const lastPositions = {}; // z.B. { [clientId_canvasNum]: {x, y} }
-
 const infoDisplay = document.getElementById('info-display');
-
-// address of the WebSocket server
-const webRoomsWebSocketServerAddr = 'https://nosch.uber.space/web-rooms/';
-
-// variables
-let clientId = null; // client ID sent by web-rooms server when calling 'enter-room'
-let clientCount = 0; // number of clients connected to the same room
-const playerCountDisplay = document.getElementById('playerCountDisplay');
 
 window.addEventListener('DOMContentLoaded', () => {
   const root = document.querySelector('#model-root');
@@ -492,10 +481,6 @@ canvas.onmousedown = (e) => {
   const pos = getCanvasCoords(canvas, e);
   ctx.beginPath();
   ctx.moveTo(pos.x, pos.y);
-  // Lokal zeichnen
-  lastPositions[`${clientId}_${num}`] = { x: pos.x, y: pos.y };
-  // An andere senden
-  sendRequest('*broadcast-message*', ['draw-start', num, pos.x, pos.y, clientId]);
 };
 
   canvas.onmouseup = () => zeichnen = false;
@@ -506,11 +491,140 @@ canvas.onmousedown = (e) => {
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
   updatePlaneTexture(num);
-  lastPositions[`${clientId}_${num}`] = { x: pos.x, y: pos.y };
-  sendRequest('*broadcast-message*', ['draw-line', num, pos.x, pos.y, clientId]);
 };
   }
 
+// === Touch-Unterstützung für Canvas ===
+function addTouchEvents(canvas, ctx, num) {
+  let lastTouch = null;
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    zeichnen = true;
+    const touch = e.touches[0];
+    const pos = getCanvasCoords(canvas, touch);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    lastTouch = pos;
+  });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!zeichnen) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const pos = getCanvasCoords(canvas, touch);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    updatePlaneTexture(num);
+    lastTouch = pos;
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    zeichnen = false;
+    lastTouch = null;
+  });
+}
+
+function toggleCanvas(num) {
+  const canvas = canvasMap[num];
+
+  if (aktiveNummer === num) {
+    canvas.style.display = "none";
+    aktiveNummer = null;
+    return;
+  }
+
+  if (aktiveNummer) {
+    canvasMap[aktiveNummer].style.display = "none";
+  }
+
+  aktiveNummer = num;
+  canvas.style.display = "block";
+
+  const ctx = contextMap[num];
+
+  // Mouse Events
+  canvas.onmousedown = (e) => {
+    zeichnen = true;
+    const pos = getCanvasCoords(canvas, e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  };
+  canvas.onmouseup = () => zeichnen = false;
+  canvas.onmousemove = (e) => {
+    if (!zeichnen) return;
+    const pos = getCanvasCoords(canvas, e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    updatePlaneTexture(num);
+  };
+
+  // Touch Events
+  addTouchEvents(canvas, ctx, num);
+}
+
+// ...existing code...
+
+// === Mobile UI-Buttons für Canvas- und Moduswahl ===
+window.addEventListener('DOMContentLoaded', () => {
+  // ...existing code...
+
+  // Mobile Controls
+  const mobileControls = document.createElement('div');
+  mobileControls.id = 'mobile-controls';
+  mobileControls.style.position = 'fixed';
+  mobileControls.style.bottom = '10px';
+  mobileControls.style.left = '50%';
+  mobileControls.style.transform = 'translateX(-50%)';
+  mobileControls.style.zIndex = '9999';
+  mobileControls.style.display = 'flex';
+  mobileControls.style.gap = '10px';
+  mobileControls.style.flexWrap = 'wrap';
+  mobileControls.style.background = 'rgba(255,255,255,0.7)';
+  mobileControls.style.borderRadius = '10px';
+  mobileControls.style.padding = '6px 10px';
+
+  // Canvas Buttons
+  ['1', '2', '3'].forEach(num => {
+    const btn = document.createElement('button');
+    btn.textContent = `Canvas ${num}`;
+    btn.style.fontSize = '1.1em';
+    btn.style.padding = '0.5em 1em';
+    btn.onclick = () => {
+      const plane = document.querySelector(`#plane${num}`);
+      if (plane?.getAttribute("visible")) {
+        toggleCanvas(Number(num));
+      }
+    };
+    mobileControls.appendChild(btn);
+  });
+
+  // Modus Buttons
+  [
+    {mode: 'sun', label: 'Sonne'},
+    {mode: 'night', label: 'Nacht'},
+    {mode: 'rain', label: 'Regen'},
+    {mode: 'reset', label: 'Reset'}
+  ].forEach(({mode, label}) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.fontSize = '1.1em';
+    btn.style.padding = '0.5em 1em';
+    btn.onclick = () => {
+      if (mode === 'sun') showSun();
+      if (mode === 'night') showNight();
+      if (mode === 'rain') showRain();
+      if (mode === 'reset') resetAll();
+    };
+    mobileControls.appendChild(btn);
+  });
+
+  document.body.appendChild(mobileControls);
+
+  // ...existing code...
+});
+
+// ...existing code...
 
   function updatePlaneTexture(num) {
     const plane = document.querySelector(`#plane${num}`);
@@ -544,131 +658,8 @@ setInterval(() => {
     // Hintergrund wieder weiß setzen
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvasMap[num].width, canvasMap[num].height);
-
-    updatePlaneTexture(num);
   });
   console.log("Alle Canvases wurden automatisch geleert.");
 }, 300000); 
 
-/****************************************************************
- * websocket communication
- */
-const socket = new WebSocket(webRoomsWebSocketServerAddr);
-
-// helper function to send requests over websocket to web-room server
-function sendRequest(...message) {
-  const str = JSON.stringify(message);
-  socket.send(str);
-  console.log("Hi ich funktionier")
-}
-
-
-// listen to opening websocket connections
-socket.addEventListener('open', (event) => {
-  sendRequest('*enter-room*', 'i-bau-graffiti');
-  sendRequest('*subscribe-client-count*');
-  sendRequest('*subscribe-client-enter-exit*');
-
-  // ping the server regularly with an empty message to prevent the socket from closing
-  setInterval(() => socket.send(''), 30000);
 });
-
-socket.addEventListener("close", (event) => {
-  clientId = null;
-  document.body.classList.add('disconnected');
-});
-
-// listen to messages from server
-socket.addEventListener('message', (event) => {
-  const data = event.data;
-
-  if (data.length > 0) {
-    const incoming = JSON.parse(data);
-    const selector = incoming[0];
-
-    // dispatch incomming messages
-
-switch (selector) {
-  // responds to '*client-count*'
-  case '*client-count*':
-    clientCount = incoming[1];
-    infoDisplay.innerHTML = `#${clientId}/${clientCount}`;
-    
-    // Spieleranzahl-Anzeige aktualisieren
-    const playerCountDisplay = document.getElementById('playerCountDisplay');
-    if (playerCountDisplay) {
-      playerCountDisplay.textContent = `Spieler online: ${clientCount}`;
-    }
-    break;
- //Beim Empfangen:
-case 'draw-start': {
-  const canvasNum = incoming[1];
-  const x = incoming[2];
-  const y = incoming[3];
-  const senderId = incoming[4];
-  // Eigene Nachrichten ignorieren
-  if (senderId === clientId) break;
-  const ctx = contextMap[canvasNum];
-  if (!ctx) break;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  lastPositions[`${senderId}_${canvasNum}`] = { x, y };
-  break;
-}
-case 'draw-line': {
-  const canvasNum = incoming[1];
-  const x = incoming[2];
-  const y = incoming[3];
-  const senderId = incoming[4];
-  if (senderId === clientId) break;
-  const ctx = contextMap[canvasNum];
-  if (!ctx) break;
-  // Optional: falls kein Pfad existiert, beginne einen neuen
-  if (!lastPositions[`${senderId}_${canvasNum}`]) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-  }
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  updatePlaneTexture(canvasNum);
-  lastPositions[`${senderId}_${canvasNum}`] = { x, y };
-  break;
-}
-      case '*client-enter*':
-        const enterId = incoming[1];
-        console.log(`client #${enterId} has entered the room`);
-        break;
-
-        case '*client-id*':
-      clientId = incoming[1];
-      break;
-
-      case '*client-exit*':
-        const exitId = incoming[1];
-        console.log(`client #${exitId} has left the room`);
-        break;
-
-      // 'hello there' messages sent from other clients
-      case 'hello-there':
-        const otherId = incoming[1];
-        console.log(`client #${otherId} says 'Hello there!'`);
-
-        highlightText(titleDisplay); // highlight screen by others (function defined above)
-        break;
-
-      case '*error*': {
-        const message = incoming[1];
-        console.warn('server error:', ...message);
-        break;
-      }
-
-      default:
-        console.log(`unknown incoming messsage: [${incoming}]`);
-        break;
-    
-    }
-        console.log(data)
-        '*get-client-count*'
-  }
-});
-})
