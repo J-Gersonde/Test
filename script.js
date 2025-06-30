@@ -468,7 +468,6 @@ function showPlaneByKey(key) {
 
     const ctx = contextMap[num];
 
-    // Beim Senden:
 canvas.onmousedown = (e) => {
   zeichnen = true;
   const pos = getCanvasCoords(canvas, e);
@@ -495,21 +494,34 @@ canvas.onmousedown = (e) => {
     }
   }
 
-// Canvas auswählen und überprüfen zum Zeichnen
-document.addEventListener("keydown", (event) => {
-  if (!zeichenModusAktiv) return;
+let closeBtn = document.createElement("button");
+closeBtn.textContent = "Schließen";
+closeBtn.style.position = "fixed";
+closeBtn.style.top = "20px";
+closeBtn.style.right = "20px";
+closeBtn.style.zIndex = "1000";
+closeBtn.style.display = "none";
+document.body.appendChild(closeBtn);
 
-  const key = event.key;
-  if (!["1", "2", "3"].includes(key)) return;
-
-  const plane = document.querySelector(`#plane${key}`);
-  const isPlaneVisible = plane?.getAttribute("visible");
-
-  // Nur Canvas zeigen/verstecken, wenn plane sichtbar
-  if (isPlaneVisible) {
-    toggleCanvas(Number(key));
+closeBtn.addEventListener("click", () => {
+  if (aktiveNummer) {
+    canvasMap[aktiveNummer].style.display = "none";
+    closeBtn.style.display = "none";
+    aktiveNummer = null;
   }
 });
+
+// Klick-Listener für jede Plane
+Object.entries(planeMap).forEach(([id, plane], idx) => {
+  plane.addEventListener("click", () => {
+    const num = idx + 1;
+    // Canvas anzeigen
+    Object.values(canvasMap).forEach(c => c.style.display = "none");
+    canvasMap[num].style.display = "block";
+    closeBtn.style.display = "block";
+    aktiveNummer = num;
+  });
+}); 
 
   // Alle 5 Minuten Canvas clearen
 setInterval(() => {
