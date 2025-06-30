@@ -1,6 +1,5 @@
 let zeichenModusAktiv = false;
 
-const infoDisplay = document.getElementById('info-display');
 
 window.addEventListener('DOMContentLoaded', () => {
   const root = document.querySelector('#model-root');
@@ -226,8 +225,6 @@ function showRain() {
   randomizeWindowLights('rain');
 }
 
-
-
   function resetAll() {
     stopAll();
     sky.setAttribute('color', '#dfefff');
@@ -300,8 +297,6 @@ function enterPanorama(imgSrc) {
   sky.setAttribute('src', imgSrc);
   exitBtn.style.display = 'inline-block';
 
-  
-
   // Audio dämpfen für center & left
   const inside = imgSrc.includes('center') || imgSrc.includes('left');
   const volume = inside ? 0.2 : 1.0; // gedämpft oder normal
@@ -309,8 +304,6 @@ function enterPanorama(imgSrc) {
   nightAudio.volume = volume;
   rainAudio.volume = volume;
 }
-
-
 
 // Funktion um Panorama-Modus zu verlassen
 function exitPanorama() {
@@ -494,138 +487,6 @@ canvas.onmousedown = (e) => {
 };
   }
 
-// === Touch-Unterstützung für Canvas ===
-function addTouchEvents(canvas, ctx, num) {
-  let lastTouch = null;
-
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    zeichnen = true;
-    const touch = e.touches[0];
-    const pos = getCanvasCoords(canvas, touch);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    lastTouch = pos;
-  });
-
-  canvas.addEventListener('touchmove', (e) => {
-    if (!zeichnen) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    const pos = getCanvasCoords(canvas, touch);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    updatePlaneTexture(num);
-    lastTouch = pos;
-  });
-
-  canvas.addEventListener('touchend', (e) => {
-    zeichnen = false;
-    lastTouch = null;
-  });
-}
-
-function toggleCanvas(num) {
-  const canvas = canvasMap[num];
-
-  if (aktiveNummer === num) {
-    canvas.style.display = "none";
-    aktiveNummer = null;
-    return;
-  }
-
-  if (aktiveNummer) {
-    canvasMap[aktiveNummer].style.display = "none";
-  }
-
-  aktiveNummer = num;
-  canvas.style.display = "block";
-
-  const ctx = contextMap[num];
-
-  // Mouse Events
-  canvas.onmousedown = (e) => {
-    zeichnen = true;
-    const pos = getCanvasCoords(canvas, e);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-  };
-  canvas.onmouseup = () => zeichnen = false;
-  canvas.onmousemove = (e) => {
-    if (!zeichnen) return;
-    const pos = getCanvasCoords(canvas, e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    updatePlaneTexture(num);
-  };
-
-  // Touch Events
-  addTouchEvents(canvas, ctx, num);
-}
-
-// ...existing code...
-
-// === Mobile UI-Buttons für Canvas- und Moduswahl ===
-window.addEventListener('DOMContentLoaded', () => {
-  // ...existing code...
-
-  // Mobile Controls
-  const mobileControls = document.createElement('div');
-  mobileControls.id = 'mobile-controls';
-  mobileControls.style.position = 'fixed';
-  mobileControls.style.bottom = '10px';
-  mobileControls.style.left = '50%';
-  mobileControls.style.transform = 'translateX(-50%)';
-  mobileControls.style.zIndex = '9999';
-  mobileControls.style.display = 'flex';
-  mobileControls.style.gap = '10px';
-  mobileControls.style.flexWrap = 'wrap';
-  mobileControls.style.background = 'rgba(255,255,255,0.7)';
-  mobileControls.style.borderRadius = '10px';
-  mobileControls.style.padding = '6px 10px';
-
-  // Canvas Buttons
-  ['1', '2', '3'].forEach(num => {
-    const btn = document.createElement('button');
-    btn.textContent = `Canvas ${num}`;
-    btn.style.fontSize = '1.1em';
-    btn.style.padding = '0.5em 1em';
-    btn.onclick = () => {
-      const plane = document.querySelector(`#plane${num}`);
-      if (plane?.getAttribute("visible")) {
-        toggleCanvas(Number(num));
-      }
-    };
-    mobileControls.appendChild(btn);
-  });
-
-  // Modus Buttons
-  [
-    {mode: 'sun', label: 'Sonne'},
-    {mode: 'night', label: 'Nacht'},
-    {mode: 'rain', label: 'Regen'},
-    {mode: 'reset', label: 'Reset'}
-  ].forEach(({mode, label}) => {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.fontSize = '1.1em';
-    btn.style.padding = '0.5em 1em';
-    btn.onclick = () => {
-      if (mode === 'sun') showSun();
-      if (mode === 'night') showNight();
-      if (mode === 'rain') showRain();
-      if (mode === 'reset') resetAll();
-    };
-    mobileControls.appendChild(btn);
-  });
-
-  document.body.appendChild(mobileControls);
-
-  // ...existing code...
-});
-
-// ...existing code...
-
   function updatePlaneTexture(num) {
     const plane = document.querySelector(`#plane${num}`);
     const mesh = plane.getObject3D('mesh');
@@ -658,8 +519,9 @@ setInterval(() => {
     // Hintergrund wieder weiß setzen
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvasMap[num].width, canvasMap[num].height);
+
+    updatePlaneTexture(num);
   });
   console.log("Alle Canvases wurden automatisch geleert.");
 }, 300000); 
-
-});
+})
