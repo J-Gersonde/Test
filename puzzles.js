@@ -57,7 +57,7 @@ const puzzles = [
 ],
 
   question:
-    "Welches Wort versteckt sich in Gax’ Notiz?",
+    "Lösungswort",
 
   solution: "VORGLÜHEN",
 
@@ -165,7 +165,7 @@ const puzzles = [
     ],
 
     question:
-      "Was hatte Gax entdeckt?",
+      "Lösungswort",
 
     solution: "LATERNE",
 
@@ -225,7 +225,7 @@ const puzzles = [
       "Gax stand dort allein, hielt seinen Ausweis in der Hand und diskutierte offenbar mit jemandem über seinen Einlass. Er zeigte seinen Ausweis, wartete, zeigte ihn erneut und schüttelte schließlich enttäuscht den Kopf.",
       "Auf Gax’ Handy fand sich am nächsten Morgen lediglich diese merkwürdige Notiz:"
     ],
-    question: "Mit wem diskutierte Gax?",
+    question: "Lösungswort",
     solution: "GETRAENKEAUTOMAT",
     answers: [
       "GETRÄNKEAUTOMAT",
@@ -270,7 +270,7 @@ const puzzles = [
       "„Was ist passiert?“, fragte er. Gax blickte zufrieden durch den Raum: „Luigi wurde ausgewählt.“",
       "Am nächsten Morgen fand sich auf Gax’ Handy eine automatisch von Shazam erstellte Playlist."
     ],
-    question: "Was ist mit Gax auf der Tanzfläche passiert?",
+    question: "Lösungswort",
     solution: "GEBLASEN",
     answers: ["GEBLASEN", "ER WURDE GEBLASEN", "GAX WURDE GEBLASEN"],
     hints: [
@@ -319,7 +319,7 @@ const puzzles = [
       "Was zunächst wie ein normales Gespräch aussah, entwickelte sich schnell zu einer vollkommen unnötigen Diskussion: Wer kennt Gax eigentlich besser?",
       "Am nächsten Morgen fand sich auf seinem Handy eine merkwürdige Zahlenfolge. Niemand wusste, warum er sie gespeichert hatte."
     ],
-    question: "Mit wem hatte Gax sich gestritten?",
+    question: "Gesuchte Person",
     solution: "ES WAR SEINE EX",
     answers: ["EX", "SEINE EX", "ES WAR SEINE EX", "EXFREUNDIN", "EX FREUNDIN"],
     hints: [
@@ -356,7 +356,7 @@ const puzzles = [
       "Wie Gax vom Club bis zum Hotel gekommen war, konnte später niemand nachvollziehen. Fest stand nur, dass er mitten in der Nacht im Hotel Gärtner auftauchte.",
       "Die Kamera im Eingangsbereich hatte keine Bilder gespeichert. Das Sicherheitssystem hatte jedoch die Zustände von fünf Sensoren aufgezeichnet."
     ],
-    question: "In welchem Zustand tauchte Gax im Hotel auf?",
+    question: "Gesuchter Zustand",
     solution: "NACKT",
     answers: ["NACKT", "SPLITTERNACKT", "ER WAR NACKT", "HALBNACKT"],
     hints: [
@@ -398,7 +398,7 @@ const puzzles = [
       "Am nächsten Morgen lag der merkwürdige Schlüssel noch immer zwischen den Fundstücken. Gax war sich sicher: „Hotelzimmer.“ Der Mitarbeiter des Hotels widersprach sofort.",
       "An dem Schlüssel hing ein stark beschädigter Anhänger. Die Vorderseite war zerkratzt, auf der Rückseite waren dagegen noch einige Vertiefungen zu erkennen."
     ],
-    question: "Wozu gehörte der Schlüssel wirklich?",
+    question: "Gesuchter Gegenstand",
     solution: "SPIND",
     answers: ["SPIND", "CLUBSPIND", "GARDEROBENSPIND", "EIN SPIND"],
     hints: [
@@ -438,7 +438,7 @@ const puzzles = [
       "Für jeden normalen Menschen waren es ein Alien- und ein Vampirkostüm. Für Gax arbeiteten die beiden zusammen. Er ging hinter einem Mülleimer in Deckung und entwickelte einen Verteidigungsplan für Holzgerlingen.",
       "Am nächsten Morgen fand sich auf seinem Handy ein Eintrag mit dem Titel LUIGI DEFENCE LOG."
     ],
-    question: "Womit wollte Gax Alien und Vampir bekämpfen?",
+    question: "Gesuchte Gegenstände",
     solution: "BESEN UND KNOBLAUCHSOSSE",
     answers: [
       "BESEN UND KNOBLAUCHSOSSE",
@@ -490,7 +490,7 @@ MISSION: HOLZGERLINGEN RETTEN`);
       "Gax hatte etwas gefunden, das für jeden normalen Menschen ungeeignet gewesen wäre, um damit durch Holzgerlingen zu fahren.",
       "Am nächsten Morgen fand sich auf seinem Handy eine Aufzeichnung mit dem Titel LUIGI GRAND PRIX. Die Startposition fehlte; alle vier Runden begannen jedoch am selben Feld."
     ],
-    question: "Womit raste Gax durch die Nacht?",
+    question: "Gesuchter Gegenstand",
     solution: "EINKAUFSWAGEN",
     answers: ["EINKAUFSWAGEN", "EIN EINKAUFSWAGEN", "EINKAUFS WAGEN"],
     hints: [
@@ -544,7 +544,7 @@ RUNDE 4  ← ↑ ←
       "Gax erreichte die HEM-Tankstelle mit seinem Einkaufswagen und lenkte direkt auf eine Zapfsäule zu. „Einmal vollmachen.“ Der Mitarbeiter erklärte ihm, dass ein Einkaufswagen weder Diesel noch Super Plus brauche.",
       "Nach einer längeren Diskussion schlug Gax einen Tausch vor. Im Kassensystem fand sich später ein Fehlerprotokoll: Bei sieben Einträgen fehlte jeweils die letzte Ziffer des Codes."
     ],
-    question: "Was bekam Gax für seinen Einkaufswagen?",
+    question: "Gesuchter Gegenstand",
     solution: "KUERBIS",
     answers: ["KÜRBIS", "KUERBIS", "KURBIS", "EIN KÜRBIS"],
     hints: [
@@ -594,7 +594,7 @@ STATUS: PRÜFUNG FEHLGESCHLAGEN`);
       "Wie Gax auf die Idee kam, mitten in der Nacht mit einem Kürbis eine Kirche aufzusuchen, konnte niemand erklären. Er selbst behauptete: „Es war ein medizinischer Notfall.“",
       "Seine Smartwatch hatte während des Aufenthalts sieben ungewöhnlich hohe Pulswerte gespeichert. Die Aufzeichnung begann genau in dem Moment, als Gax jemanden im Inneren entdeckte."
     ],
-    question: "Wen glaubte Gax in der Kirche gesehen zu haben?",
+    question: "Gesuchte Person",
     solution: "GANDALF",
     answers: ["GANDALF", "GANDALF DER GRAUE", "ZAUBERER"],
     hints: [
@@ -643,7 +643,7 @@ Persönlicher Ruhepuls: 60 BPM
       "Gax erreichte den Parkplatz am Bahnhof, noch immer mit seinem Kürbis. Jetzt hatte er eine wichtigere Mission: sein Auto finden.",
       "Nach mehreren Versuchen blieb er vor einem Wagen stehen. „Yesss.“ Auf seinem Handy fand sich später ein beschädigtes Fahrzeugprofil mit fünf Positionsangaben."
     ],
-    question: "Wie hatte Gax sein Auto genannt?",
+    question: "Gesuchter Name",
     solution: "YOSHI",
     answers: ["YOSHI", "YOSCHI"],
     hints: [
@@ -691,7 +691,7 @@ Reihe 2 / Platz 4
       "Vor seinem Zuhause nannte der Fahrer den Preis. Gax hatte weder Bargeld noch Karte, aber angeblich „etwas Besseres“.",
       "Das beschädigte Sprachsystem rekonstruierte acht mögliche Angebote und neun Aussagen. Gax bot genau drei Dinge an; genau zwei Aussagen sind fehlerhaft."
     ],
-    question: "Welche drei Dinge bot Gax dem Taxifahrer als Bezahlung an?",
+    question: "Gesuchte drei Angebote",
     solution: "KUERBIS SCHLUESSEL RITTERSCHLAG",
     answers: [
       "KÜRBIS SCHLÜSSEL RITTERSCHLAG",
@@ -742,7 +742,7 @@ RADMUTTERN · KIRCHENZETTEL · KNOBLAUCHSOSSE · LUIGI-MÜTZE
       "Vor der Tür standen der Alien, der Vampir und der Hotelmitarbeiter. Der Alien zeigte auf den Knoblauchfleck, der Hotelmitarbeiter hielt ein Stück Plastikpalme und der Vampir einen unbekannten Gegenstand.",
       "Gax’ Türkamera hatte nur vier merkwürdige Referenzen gespeichert. Darunter stand: OBJEKT NICHT ERKANNT."
     ],
-    question: "Was hielt der Vampir in der Hand?",
+    question: "Gesuchter Gegenstand",
     solution: "HOSE",
     answers: ["HOSE", "GAX HOSE", "GAX' HOSE", "SEINE HOSE", "GAX’ HOSE"],
     hints: [
@@ -781,7 +781,7 @@ RADMUTTERN · KIRCHENZETTEL · KNOBLAUCHSOSSE · LUIGI-MÜTZE
       "Sandra hatte die wichtigsten Momente noch einmal zusammengestellt, doch alle Erinnerungsfetzen waren durcheinandergeraten.",
       "In den Karten stecken sieben Momente der vergangenen Nacht. Findet heraus, welche drei Karten jeweils zusammengehören. Eine Karte bleibt übrig."
     ],
-    question: "Welche Karte bleibt übrig – und damit die letzte offene Spur?",
+    question: "Übrig gebliebene Karte",
     solution: "SCHUHE",
     answers: ["SCHUHE", "DIE SCHUHE", "GAX SCHUHE", "GAX' SCHUHE"],
     hints: [
