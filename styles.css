@@ -1314,3 +1314,174 @@ button:disabled {
     flex: 1;
   }
 }
+
+
+/* =========================================================
+   AUTOMATISCHER FLUCH
+   ========================================================= */
+
+.active-curse-badge {
+  width: fit-content;
+  margin: 0 0 22px;
+  padding: 8px 12px;
+
+  border: 1px solid rgba(215, 154, 255, 0.42);
+  border-radius: 999px;
+
+  color: #e3b7ff;
+  background: rgba(126, 55, 164, 0.15);
+
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cursed-question-text {
+  margin: 10px 0 22px;
+  padding: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  white-space: pre-wrap;
+  overflow-wrap: normal;
+
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.curse-announcement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+
+  display: grid;
+  place-items: center;
+
+  padding:
+    max(18px, env(safe-area-inset-top))
+    18px
+    max(18px, env(safe-area-inset-bottom));
+
+  overflow-y: auto;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(107, 34, 140, 0.26),
+      transparent 58%
+    ),
+    rgba(2, 2, 4, 0.92);
+
+  backdrop-filter: blur(8px);
+  animation: curseOverlayIn 0.28s ease both;
+}
+
+.curse-announcement {
+  width: min(100%, 520px);
+  padding: 30px 22px 24px;
+
+  border: 1px solid rgba(215, 154, 255, 0.5);
+  border-radius: 24px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(48, 24, 59, 0.98),
+      rgba(15, 16, 21, 0.99)
+    );
+
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.72),
+    0 0 50px rgba(153, 73, 196, 0.13);
+
+  animation: curseAnnouncementIn 0.42s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.curse-skull {
+  margin-bottom: 6px;
+
+  color: #f2e8f8;
+
+  font-size: clamp(5rem, 22vw, 8rem);
+  line-height: 0.95;
+
+  filter:
+    drop-shadow(0 0 20px rgba(215, 154, 255, 0.45));
+
+  animation: curseSkullPulse 1.8s ease-in-out infinite;
+}
+
+.curse-announcement-title {
+  margin: 10px 0 20px;
+
+  color: #ffffff;
+
+  font-size: clamp(1.8rem, 8vw, 2.65rem);
+  line-height: 1.05;
+}
+
+.curse-announcement-label {
+  margin: 0 0 6px;
+
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.curse-announcement-name {
+  display: block;
+
+  color: #d79aff;
+
+  font-size: 1.5rem;
+}
+
+.curse-announcement-description {
+  max-width: 390px;
+  margin: 12px auto 24px;
+}
+
+.curse-accept-button {
+  width: 100%;
+}
+
+@keyframes curseOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes curseAnnouncementIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes curseSkullPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curse-announcement-overlay,
+  .curse-announcement,
+  .curse-skull {
+    animation: none;
+  }
+}
