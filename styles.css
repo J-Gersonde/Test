@@ -1,0 +1,1316 @@
+/* =========================================================
+   MOBILE-FIRST DESIGN
+   GAX' VERLORENE HALLOWEEN-NACHT
+   ========================================================= */
+
+:root {
+  --background: #090a0d;
+  --card: #16181e;
+  --card-light: #21242c;
+
+  --text: #f5f5f5;
+  --muted: #b7bac4;
+
+  --green: #78d86f;
+  --dark-green: #2e8e43;
+
+  --red: #ff7373;
+  --yellow: #e4b95f;
+
+  --border: rgba(255, 255, 255, 0.12);
+}
+
+
+/* =========================================================
+   GRUNDEINSTELLUNGEN
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  margin: 0;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  color: var(--text);
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(61, 135, 69, 0.2),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(87, 49, 120, 0.16),
+      transparent 32%
+    ),
+    var(--background);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   APP-CONTAINER
+   ========================================================= */
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 900px;
+
+  margin: 0 auto;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    16px
+    max(32px, env(safe-area-inset-bottom));
+}
+
+
+/* =========================================================
+   KOPFBEREICH
+   ========================================================= */
+
+.game-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+.title-area {
+  min-width: 0;
+}
+
+.small-title,
+.chapter-label {
+  margin: 0 0 7px;
+
+  color: var(--green);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  margin: 0;
+
+  font-size: clamp(
+    1.35rem,
+    7vw,
+    2.2rem
+  );
+
+  line-height: 1.12;
+}
+
+h2 {
+  margin: 0 0 16px;
+
+  font-size: clamp(
+    1.7rem,
+    8vw,
+    2.7rem
+  );
+
+  line-height: 1.12;
+}
+
+
+/* =========================================================
+   STATUSANZEIGE
+   ========================================================= */
+
+.game-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.status-box {
+  min-width: 0;
+  padding: 10px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background:
+    rgba(
+      22,
+      24,
+      30,
+      0.92
+    );
+}
+
+.status-box span {
+  display: block;
+  margin-bottom: 3px;
+
+  color: var(--muted);
+
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.status-box strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--text);
+
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   FORTSCHRITTSBALKEN
+   ========================================================= */
+
+.progress-background {
+  height: 7px;
+  margin-bottom: 20px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+}
+
+.progress-bar {
+  width: 0;
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--dark-green),
+      var(--green)
+    );
+
+  transition: width 0.4s ease;
+}
+
+
+/* =========================================================
+   KARTEN
+   ========================================================= */
+
+.card {
+  width: 100%;
+  padding: 24px 18px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background:
+    rgba(
+      22,
+      24,
+      30,
+      0.96
+    );
+
+  box-shadow:
+    0 18px 55px
+    rgba(
+      0,
+      0,
+      0,
+      0.36
+    );
+}
+
+.start-card {
+  min-height: calc(100dvh - 180px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   INFOBOXEN
+   ========================================================= */
+
+.info-box,
+.completed-box {
+  margin: 20px 0;
+  padding: 15px;
+
+  border-radius: 13px;
+
+  line-height: 1.55;
+}
+
+.info-box {
+  border:
+    1px solid
+    rgba(
+      228,
+      185,
+      95,
+      0.35
+    );
+
+  color: #f1d38f;
+
+  background:
+    rgba(
+      228,
+      185,
+      95,
+      0.08
+    );
+}
+
+.completed-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  border:
+    1px solid
+    rgba(
+      120,
+      216,
+      111,
+      0.35
+    );
+
+  background:
+    rgba(
+      120,
+      216,
+      111,
+      0.08
+    );
+}
+
+.completed-box span {
+  color: var(--muted);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.main-button,
+.secondary-button {
+  width: 100%;
+  min-height: 52px;
+
+  padding: 13px 18px;
+
+  border-radius: 13px;
+
+  font-weight: 700;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.main-button {
+  border: none;
+
+  color: #071107;
+  background: var(--green);
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+
+  color: var(--text);
+  background: var(--card-light);
+}
+
+.main-button:active,
+.secondary-button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+  transform: none;
+}
+
+
+
+
+/* =========================================================
+   RÄTSELBOX
+   ========================================================= */
+
+.riddle-box {
+  width: 100%;
+
+  margin: 22px 0;
+  padding: 16px 10px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  background: #0d0f13;
+}
+
+
+/*
+  Durch die kleine Monospace-Schrift passen auch
+  Zeilen mit vielen Leerzeichen auf kleine Handys.
+*/
+
+.space-puzzle {
+  width: 100%;
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family:
+    "Courier New",
+    Courier,
+    monospace;
+
+  font-size: clamp(
+    0.55rem,
+    2.65vw,
+    0.88rem
+  );
+
+  line-height: 2;
+  white-space: pre;
+}
+
+
+/* =========================================================
+   ANTWORTBEREICH
+   ========================================================= */
+
+.question {
+  margin: 22px 0 9px;
+
+  color: var(--text);
+  font-weight: 700;
+}
+
+.answer-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.answer-input {
+  width: 100%;
+  min-height: 52px;
+
+  padding: 13px 15px;
+
+  border: 1px solid var(--border);
+  border-radius: 13px;
+
+  outline: none;
+
+  color: var(--text);
+  background: #0d0f13;
+
+  /*
+    Mindestens 16px verhindern automatisches
+    Zoomen auf iPhones.
+  */
+  font-size: 16px;
+}
+
+.answer-input:focus {
+  border-color: var(--green);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      120,
+      216,
+      111,
+      0.13
+    );
+}
+
+
+/* =========================================================
+   FEEDBACK
+   ========================================================= */
+
+.feedback {
+  min-height: 26px;
+  margin: 12px 0 0;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.feedback.error {
+  color: var(--red);
+}
+
+.feedback.success {
+  color: var(--green);
+}
+
+.feedback.hint-feedback {
+  color: var(--yellow);
+}
+
+
+/* =========================================================
+   HINWEISE
+   ========================================================= */
+
+.hint-area {
+  margin-top: 22px;
+}
+
+.hint-text {
+  margin-bottom: 0;
+  padding: 14px;
+
+  border-radius: 12px;
+
+  color: #f1d38f;
+
+  background:
+    rgba(
+      228,
+      185,
+      95,
+      0.08
+    );
+}
+
+.hidden {
+  display: none;
+}
+
+
+/* =========================================================
+   GESCHICHTE
+   ========================================================= */
+
+.success-card {
+  border-color:
+    rgba(
+      120,
+      216,
+      111,
+      0.35
+    );
+}
+
+
+.final-score {
+  color: var(--text);
+
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLETS UND COMPUTER
+   ========================================================= */
+
+@media (min-width: 700px) {
+  .game-container {
+    padding:
+      30px
+      24px
+      60px;
+  }
+
+  .game-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .game-status {
+    width: auto;
+    min-width: 240px;
+  }
+
+  .card {
+    padding: 48px;
+    border-radius: 24px;
+  }
+
+  .answer-area {
+    flex-direction: row;
+  }
+
+  .answer-area .main-button {
+    width: auto;
+    min-width: 130px;
+  }
+
+  .main-button,
+  .secondary-button {
+    width: auto;
+  }
+
+  .space-puzzle {
+    font-size: 0.95rem;
+  }
+}
+/* =========================================================
+   HEADER-AKTIONEN
+   ========================================================= */
+
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  width: 100%;
+}
+
+.archive-button {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 11px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  color: var(--text);
+  background: var(--card-light);
+
+  font-weight: 700;
+
+  touch-action: manipulation;
+}
+
+
+/* =========================================================
+   ARCHIV
+   ========================================================= */
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.archive-entry {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  color: var(--text);
+  background: #0d0f13;
+
+  text-align: left;
+
+  touch-action: manipulation;
+}
+
+.archive-entry:active {
+  transform: scale(0.99);
+}
+
+.archive-entry-information {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.archive-entry-information strong {
+  overflow-wrap: anywhere;
+}
+
+.archive-entry-information small {
+  color: var(--muted);
+}
+
+.archive-chapter {
+  color: var(--green);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.archive-arrow {
+  flex-shrink: 0;
+
+  color: var(--green);
+
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.archive-empty {
+  margin: 22px 0;
+  padding: 18px;
+
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+
+  color: var(--muted);
+
+  text-align: center;
+}
+
+.archive-solution {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+  margin: 20px 0;
+  padding: 16px;
+
+  border:
+    1px solid
+    rgba(120, 216, 111, 0.35);
+
+  border-radius: 14px;
+
+  background:
+    rgba(120, 216, 111, 0.08);
+}
+
+.archive-solution span {
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.archive-solution strong {
+  color: var(--green);
+
+  font-size: 1.35rem;
+}
+
+.archive-detail-card .main-button,
+.archive-detail-card .secondary-button {
+  margin-top: 10px;
+}
+
+.danger-button {
+  margin-top: 10px;
+
+  border-color:
+    rgba(255, 115, 115, 0.35);
+
+  color: var(--red);
+}
+
+
+/* =========================================================
+   GRÖSSERE BILDSCHIRME
+   ========================================================= */
+
+@media (min-width: 700px) {
+  .header-actions {
+    width: auto;
+    min-width: 250px;
+  }
+
+  .archive-button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   FLÜCHE-BUTTON
+   ========================================================= */
+
+.curse-button {
+  position: fixed;
+
+  right:
+    max(
+      16px,
+      env(safe-area-inset-right)
+    );
+
+  bottom:
+    max(
+      16px,
+      env(safe-area-inset-bottom)
+    );
+
+  z-index: 50;
+
+  min-width: 62px;
+  min-height: 62px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 2px;
+  padding: 8px 12px;
+
+  border:
+    1px solid
+    rgba(
+      190,
+      100,
+      255,
+      0.45
+    );
+
+  border-radius: 18px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      145deg,
+      #512272,
+      #281136
+    );
+
+  box-shadow:
+    0 10px 35px
+    rgba(
+      0,
+      0,
+      0,
+      0.5
+    );
+
+  font-weight: 700;
+
+  touch-action: manipulation;
+}
+
+.curse-button:active {
+  transform: scale(0.95);
+}
+
+.curse-button-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.curse-button-text {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   FLÜCHE-FENSTER
+   ========================================================= */
+
+.modal-open {
+  overflow: hidden;
+}
+
+.curse-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding:
+    16px
+    16px
+    max(
+      16px,
+      env(safe-area-inset-bottom)
+    );
+
+  background:
+    rgba(
+      0,
+      0,
+      0,
+      0.76
+    );
+
+  backdrop-filter: blur(5px);
+}
+
+.curse-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 520px;
+  max-height: 88dvh;
+
+  overflow-y: auto;
+
+  padding: 28px 20px 22px;
+
+  border:
+    1px solid
+    rgba(
+      190,
+      100,
+      255,
+      0.4
+    );
+
+  border-radius: 24px 24px 18px 18px;
+
+  background:
+    linear-gradient(
+      160deg,
+      #1d1424,
+      #111217
+    );
+
+  box-shadow:
+    0 25px 80px
+    rgba(
+      0,
+      0,
+      0,
+      0.65
+    );
+
+  animation:
+    curseModalOpen
+    0.25s ease;
+}
+
+.curse-close-button {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+
+  width: 42px;
+  height: 42px;
+
+  border: 1px solid var(--border);
+  border-radius: 50%;
+
+  color: var(--text);
+  background: var(--card-light);
+
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.curse-result {
+  min-height: 150px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+  margin: 22px 0;
+  padding: 22px 18px;
+
+  border-radius: 16px;
+
+  text-align: center;
+}
+
+.curse-result-empty {
+  border:
+    1px dashed
+    rgba(
+      255,
+      255,
+      255,
+      0.2
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.03
+    );
+}
+
+.curse-result-placeholder {
+  border:
+    1px solid
+    rgba(
+      228,
+      185,
+      95,
+      0.35
+    );
+
+  background:
+    rgba(
+      228,
+      185,
+      95,
+      0.08
+    );
+}
+
+.curse-result-active {
+  border:
+    1px solid
+    rgba(
+      190,
+      100,
+      255,
+      0.5
+    );
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(
+        190,
+        100,
+        255,
+        0.2
+      ),
+      transparent 70%
+    );
+}
+
+.curse-result-title {
+  color: #d79aff;
+
+  font-size: 1.3rem;
+}
+
+.curse-result-description {
+  margin: 0;
+}
+
+.curse-draw-button {
+  width: 100%;
+}
+
+
+/* =========================================================
+   FLÜCHE-ANIMATION
+   ========================================================= */
+
+@keyframes curseModalOpen {
+  from {
+    opacity: 0;
+    transform:
+      translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0);
+  }
+}
+
+
+/* =========================================================
+   TABLET UND COMPUTER
+   ========================================================= */
+
+@media (min-width: 700px) {
+  .curse-button {
+    right: 26px;
+    bottom: 26px;
+
+    min-width: 76px;
+    min-height: 70px;
+  }
+
+  .curse-modal-overlay {
+    align-items: center;
+  }
+
+  .curse-modal {
+    padding: 36px;
+    border-radius: 24px;
+  }
+}
+
+/* =========================================================
+   EINHEITLICHER ERZÄHLER- UND RÄTSELTEXT
+   ========================================================= */
+
+.game-text {
+  margin: 0 0 16px;
+
+  color: var(--muted);
+
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: normal;
+
+  line-height: 1.7;
+  letter-spacing: normal;
+
+  border: none;
+  background: none;
+}
+
+/* =========================================================
+   KAPITELNAVIGATION
+   ========================================================= */
+
+.chapter-navigation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+}
+
+.chapter-nav-button {
+  min-height: 46px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  color: var(--text);
+  background: var(--card-light);
+
+  font-weight: 700;
+
+  touch-action: manipulation;
+}
+
+.chapter-nav-button:disabled {
+  opacity: 0.35;
+}
+
+
+/* =========================================================
+   LADEN ODER NEU STARTEN
+   ========================================================= */
+
+.load-choice-actions {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+  margin-top: 20px;
+}
+
+
+/* =========================================================
+   DREI HINWEISE
+   ========================================================= */
+
+.hint-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.hint-card {
+  padding: 14px;
+
+  border: 1px solid
+    rgba(228, 185, 95, 0.28);
+
+  border-radius: 12px;
+
+  background:
+    rgba(228, 185, 95, 0.07);
+}
+
+.hint-number {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: var(--yellow);
+
+  font-size: 0.75rem;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hint-card .hint-text {
+  margin: 0;
+  padding: 0;
+
+  color: #f1d38f;
+  background: none;
+}
+
+.all-hints-used {
+  margin: 12px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+/* =========================================================
+   ORTSWECHSEL ZWISCHEN DEN KAPITELN
+   ========================================================= */
+
+.location-box {
+  margin-top: 28px;
+  padding-top: 22px;
+
+  border-top: 1px solid var(--border);
+}
+
+.location-box .main-button {
+  margin-top: 10px;
+}
+
+
+/* =========================================================
+   CODE-, TABELLEN- UND KARTENRÄTSEL
+   ========================================================= */
+
+.code-puzzle {
+  max-width: 100%;
+  margin: 0;
+  padding: 2px;
+
+  overflow-x: auto;
+  white-space: pre;
+
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: clamp(0.72rem, 2.8vw, 0.95rem);
+  line-height: 1.65;
+}
+
+.memory-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.memory-card {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 9px;
+  border: 1px solid rgba(228, 185, 95, 0.3);
+  border-radius: 12px;
+
+  color: var(--text);
+  background: rgba(228, 185, 95, 0.07);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 700px) {
+  .memory-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .memory-card {
+    min-height: 90px;
+    font-size: 0.88rem;
+  }
+}
+
+
+/* =========================================================
+   GRÖSSERE BILDSCHIRME
+   ========================================================= */
+
+@media (min-width: 700px) {
+  .load-choice-actions {
+    flex-direction: row;
+  }
+
+  .load-choice-actions button {
+    flex: 1;
+  }
+}
