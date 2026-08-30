@@ -15,30 +15,68 @@ const gameConfig = {
 /* =========================================================
    FLÜCHE
 
-   Die echten Flüche werden später hier eingetragen.
-   Sobald Einträge vorhanden sind, zieht der Button
-   automatisch einen zufälligen Fluch.
+   chance: 0.30 bedeutet eine Chance von 30 Prozent.
+   firstPossibleChapter: 2 schützt den Spieleinstieg.
+   Zwei Kapitel hintereinander können nie verflucht sein.
    ========================================================= */
 
-const curses = [];
+const curseConfig = {
+  chance: 0.30,
+  firstPossibleChapter: 2
+};
 
-/*
-Späteres Beispiel:
-
-const curses = [
-  {
-    title: "Die stumme Laterne",
+const curseInformation = {
+  1: {
+    title: "UwU",
     description:
-      "Du darfst bis zum Ende des nächsten Rätsels nicht sprechen."
+      "Die Geschichte ist plötzlich verdächtig niedlich, Senpai."
   },
-
-  {
-    title: "Luigis linker Fuß",
+  2: {
+    title: "Echo",
     description:
-      "Du darfst dich für fünf Minuten nur seitwärts bewegen."
+      "Wörter und Satzteile wiederholen sich wie ein unheimliches Echo."
+  },
+  3: {
+    title: "Buchstabensalat",
+    description:
+      "In vielen Wörtern wurden Buchstaben durcheinandergewirbelt."
+  },
+  4: {
+    title: "Vokalraub",
+    description:
+      "Die Vokale wurden aus den Texten gestohlen."
+  },
+  5: {
+    title: "Rückwärts",
+    description:
+      "Die Texte dieses Kapitels laufen rückwärts."
+  },
+  6: {
+    title: "Glitch",
+    description:
+      "Buchstaben zerfallen in Zahlen und Sonderzeichen."
+  },
+  7: {
+    title: "Autokorrektur",
+    description:
+      "Eine völlig überforderte Autokorrektur verändert den Text."
+  },
+  8: {
+    title: "Lügenpresse",
+    description:
+      "DIE DA OBEN mischen sich in die Geschichte ein."
+  },
+  9: {
+    title: "Capslock",
+    description:
+      "DAS GESAMTE KAPITEL SCHREIT EUCH AN."
+  },
+  10: {
+    title: "Der Motivator",
+    description:
+      "Eine Stimme feuert euch an. Du bist gut genuuuug!"
   }
-];
-*/
+};
 
 /* =========================================================
    2. SPIELSTAND
@@ -60,6 +98,10 @@ const gameState = {
   archiveReturnView: "start",
 
   activeStoryId: null,
+
+  chapterCurses: {},
+
+  acknowledgedCurseChapters: [],
 
   savedView: "start"
 };
@@ -90,7 +132,13 @@ function saveGame() {
       gameState.currentView,
 
     activeStoryId:
-      gameState.activeStoryId
+      gameState.activeStoryId,
+
+    chapterCurses:
+      gameState.chapterCurses,
+
+    acknowledgedCurseChapters:
+      gameState.acknowledgedCurseChapters
   };
 
   localStorage.setItem(
@@ -136,6 +184,17 @@ function loadGame() {
 
     gameState.activeStoryId =
       parsedData.activeStoryId ?? null;
+
+    gameState.chapterCurses =
+      parsedData.chapterCurses &&
+      typeof parsedData.chapterCurses === "object"
+        ? parsedData.chapterCurses
+        : {};
+
+    gameState.acknowledgedCurseChapters =
+      Array.isArray(parsedData.acknowledgedCurseChapters)
+        ? parsedData.acknowledgedCurseChapters
+        : [];
 
     /*
       Übernimmt alte Speicherstände,
@@ -266,6 +325,249 @@ function findPuzzleById(puzzleId) {
   return puzzles.find((puzzle) => {
     return puzzle.id === puzzleId;
   });
+}
+
+
+function getGameTextChapter(puzzle) {
+  const gameText = window.GAX_GAME_TEXT;
+
+  if (
+    !gameText ||
+    !Array.isArray(gameText.chapters)
+  ) {
+    return null;
+  }
+
+  return gameText.chapters[puzzle.chapter - 1] || null;
+}
+
+
+function getTextVariant(
+  value,
+  curseIndex,
+  fallback = ""
+) {
+  if (Array.isArray(value)) {
+    return value[curseIndex] || value[0] || fallback;
+  }
+
+  return value || fallback;
+}
+
+
+function getSavedCurseIndex(puzzle) {
+  const savedValue =
+    gameState.chapterCurses[puzzle.id];
+
+  return Number.isInteger(savedValue)
+    ? savedValue
+    : 0;
+}
+
+
+function ensureChapterCurse(puzzle) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      gameState.chapterCurses,
+      puzzle.id
+    )
+  ) {
+    return getSavedCurseIndex(puzzle);
+  }
+
+  const chapterIndex = puzzle.chapter - 1;
+  const previousPuzzle = puzzles[chapterIndex - 1];
+  const previousWasCursed =
+    previousPuzzle &&
+    getSavedCurseIndex(previousPuzzle) > 0;
+
+  const mayBeCursed =
+    puzzle.chapter >= curseConfig.firstPossibleChapter &&
+    !gameState.solvedPuzzles.includes(puzzle.id) &&
+    !previousWasCursed &&
+    Boolean(getGameTextChapter(puzzle));
+
+  let curseIndex = 0;
+
+  if (
+    mayBeCursed &&
+    Math.random() < curseConfig.chance
+  ) {
+    const availableCurses =
+      Object.keys(curseInformation)
+        .map(Number);
+
+    curseIndex = availableCurses[
+      Math.floor(
+        Math.random() * availableCurses.length
+      )
+    ];
+  }
+
+  gameState.chapterCurses[puzzle.id] =
+    curseIndex;
+
+  return curseIndex;
+}
+
+
+function appendCursedStoryText(
+  card,
+  storyText
+) {
+  if (!storyText) {
+    return;
+  }
+
+  storyText
+    .split(/\n\s*\n/)
+    .filter(Boolean)
+    .forEach((paragraph) => {
+      card.appendChild(
+        createElement(
+          "p",
+          "game-text",
+          paragraph
+        )
+      );
+    });
+}
+
+
+function appendCursedPuzzleText(
+  card,
+  questionText
+) {
+  if (!questionText) {
+    return;
+  }
+
+  const puzzleText = createElement(
+    "pre",
+    "code-puzzle cursed-question-text"
+  );
+
+  puzzleText.textContent = questionText;
+  card.appendChild(puzzleText);
+}
+
+
+function createActiveCurseBadge(curseIndex) {
+  const information =
+    curseInformation[curseIndex];
+
+  if (!information) {
+    return null;
+  }
+
+  return createElement(
+    "div",
+    "active-curse-badge",
+    `☠ ${information.title} wirkt`
+  );
+}
+
+
+function showCurseAnnouncement(
+  puzzle,
+  curseIndex
+) {
+  const information =
+    curseInformation[curseIndex];
+
+  if (
+    !information ||
+    gameState.acknowledgedCurseChapters.includes(
+      puzzle.id
+    ) ||
+    document.querySelector(
+      ".curse-announcement-overlay"
+    )
+  ) {
+    return;
+  }
+
+  const overlay = createElement(
+    "div",
+    "curse-announcement-overlay"
+  );
+
+  const announcement = createElement(
+    "section",
+    "curse-announcement"
+  );
+
+  announcement.setAttribute(
+    "role",
+    "alertdialog"
+  );
+  announcement.setAttribute(
+    "aria-modal",
+    "true"
+  );
+  announcement.setAttribute(
+    "aria-labelledby",
+    "curse-announcement-title"
+  );
+
+  const heading = createElement(
+    "h2",
+    "curse-announcement-title",
+    "Du wurdest verflucht"
+  );
+  heading.id = "curse-announcement-title";
+
+  const acceptButton = createButton(
+    "Fluch annehmen",
+    "main-button curse-accept-button",
+    () => {
+      if (
+        !gameState.acknowledgedCurseChapters.includes(
+          puzzle.id
+        )
+      ) {
+        gameState.acknowledgedCurseChapters.push(
+          puzzle.id
+        );
+      }
+
+      saveGame();
+      overlay.remove();
+      document.body.classList.remove(
+        "modal-open"
+      );
+    }
+  );
+
+  announcement.append(
+    createElement(
+      "div",
+      "curse-skull",
+      "☠"
+    ),
+    heading,
+    createElement(
+      "p",
+      "curse-announcement-label",
+      "Dieser Fluch wirkt:"
+    ),
+    createElement(
+      "strong",
+      "curse-announcement-name",
+      information.title
+    ),
+    createElement(
+      "p",
+      "curse-announcement-description",
+      information.description
+    ),
+    acceptButton
+  );
+
+  overlay.appendChild(announcement);
+  document.body.classList.add("modal-open");
+  document.body.appendChild(overlay);
+  acceptButton.focus();
 }
 
 
@@ -423,43 +725,7 @@ function createPageContainer() {
 
   app.appendChild(container);
 
-  /*
-    Der Flüche-Button wird nur erstellt,
-    wenn die Funktion bereits vorhanden ist.
-    Dadurch kann der Startscreen nicht mehr abstürzen.
-  */
-  ensureCurseButton();
-
   return container;
-}
-
-function ensureCurseButton() {
-  /*
-    Falls der Flüche-Code noch nicht vollständig
-    eingebaut wurde, läuft das Spiel trotzdem weiter.
-  */
-  if (typeof createCurseButton !== "function") {
-    return;
-  }
-
-  /*
-    Verhindert mehrere Flüche-Buttons.
-  */
-  const existingButton =
-    document.querySelector(".curse-button");
-
-  if (existingButton) {
-    return;
-  }
-
-  /*
-    Der Button wird direkt in den Body gesetzt
-    und nicht in den App-Container.
-    Dadurch wird er beim Seitenwechsel nicht gelöscht.
-  */
-  document.body.appendChild(
-    createCurseButton()
-  );
 }
 
 function updateHeader() {
@@ -547,13 +813,31 @@ function renderCurrentPuzzle() {
     return;
   }
 
-  gameState.currentView =
-  "puzzle";
+  const curseIndex =
+    ensureChapterCurse(puzzle);
 
-gameState.activeStoryId =
-  null;
+  const chapterText =
+    getGameTextChapter(puzzle);
 
-saveGame();
+  const displayedTitle = chapterText
+    ? getTextVariant(
+        chapterText.title,
+        curseIndex,
+        puzzle.title
+      )
+    : puzzle.title;
+
+  const displayedQuestion = chapterText
+    ? getTextVariant(
+        chapterText.question,
+        curseIndex,
+        puzzle.question
+      )
+    : puzzle.question;
+
+  gameState.activeStoryId = null;
+
+  saveGame();
 
   const container = createPageContainer();
 
@@ -574,14 +858,30 @@ saveGame();
     createElement(
       "h2",
       "",
-      puzzle.title
+      displayedTitle
     )
   );
 
 
+  const curseBadge =
+    createActiveCurseBadge(curseIndex);
+
+  if (curseBadge) {
+    card.appendChild(curseBadge);
+  }
+
+
   /* Erzählertext */
 
-  if (
+  if (chapterText) {
+    appendCursedStoryText(
+      card,
+      getTextVariant(
+        chapterText.storyText,
+        curseIndex
+      )
+    );
+  } else if (
     Array.isArray(puzzle.narrative) &&
     puzzle.narrative.length > 0
   ) {
@@ -636,10 +936,25 @@ if (alreadySolved) {
 
   container.appendChild(card);
 
+  showCurseAnnouncement(
+    puzzle,
+    curseIndex
+  );
+
   return;
 }
 
-  if (typeof puzzle.renderPuzzle === "function") {
+  if (chapterText) {
+    appendCursedPuzzleText(
+      card,
+      getTextVariant(
+        chapterText.questionText,
+        curseIndex
+      )
+    );
+  } else if (
+    typeof puzzle.renderPuzzle === "function"
+  ) {
     puzzle.renderPuzzle(
       card,
       puzzle
@@ -656,7 +971,7 @@ if (alreadySolved) {
   const question = createElement(
     "p",
     "game-text puzzle-question",
-    puzzle.question
+    displayedQuestion
   );
 
 
@@ -740,6 +1055,11 @@ if (alreadySolved) {
     left: 0,
     behavior: "auto"
   });
+
+  showCurseAnnouncement(
+    puzzle,
+    curseIndex
+  );
 }
 
 /* =========================================================
@@ -821,6 +1141,32 @@ function getPuzzleHints(puzzle) {
     "Achtet auf die Abstände zwischen den Wortpaaren. Sie sind nicht in jeder Zeile gleich groß.",
     "Zählt die Leerzeichen zwischen den Wörtern. Wandelt die Anzahl anschließend mit A = 1, B = 2, C = 3 und so weiter in Buchstaben um."
   ];
+
+  const chapterText =
+    getGameTextChapter(puzzle);
+
+  if (chapterText) {
+    const curseIndex =
+      getSavedCurseIndex(puzzle);
+
+    return [
+      getTextVariant(
+        chapterText.hint1,
+        curseIndex,
+        defaultHints[0]
+      ),
+      getTextVariant(
+        chapterText.hint2,
+        curseIndex,
+        defaultHints[1]
+      ),
+      getTextVariant(
+        chapterText.hint3,
+        curseIndex,
+        defaultHints[2]
+      )
+    ];
+  }
 
   if (!Array.isArray(puzzle.hints)) {
     return defaultHints;
@@ -1607,154 +1953,16 @@ function resetGame(askForConfirmation = true) {
   gameState.activeStoryId =
     null;
 
+  gameState.chapterCurses = {};
+
+  gameState.acknowledgedCurseChapters = [];
+
   localStorage.removeItem(
     "gaxEscapeSave"
   );
 
   renderStartScreen();
 }
-
-
-/* =========================================================
-   FLÜCHE-BUTTON UND FLÜCHE-FENSTER
-   ========================================================= */
-
-function createCurseButton() {
-  const button = createButton(
-    "",
-    "curse-button",
-    openCurseModal
-  );
-
-  button.setAttribute("aria-label", "Flüche öffnen");
-  button.append(
-    createElement("span", "curse-button-icon", "✦"),
-    createElement("span", "curse-button-text", "Flüche")
-  );
-
-  return button;
-}
-
-
-function openCurseModal() {
-  if (document.querySelector(".curse-modal-overlay")) {
-    return;
-  }
-
-  const overlay = createElement(
-    "div",
-    "curse-modal-overlay"
-  );
-
-  const modal = createElement(
-    "section",
-    "curse-modal"
-  );
-
-  modal.setAttribute("role", "dialog");
-  modal.setAttribute("aria-modal", "true");
-  modal.setAttribute("aria-label", "Flüche");
-
-  const closeButton = createButton(
-    "×",
-    "curse-close-button",
-    closeCurseModal
-  );
-  closeButton.setAttribute("aria-label", "Flüche schließen");
-
-  const result = createElement(
-    "div",
-    curses.length > 0
-      ? "curse-result curse-result-placeholder"
-      : "curse-result curse-result-empty"
-  );
-
-  if (curses.length > 0) {
-    result.appendChild(
-      createElement(
-        "p",
-        "curse-result-description",
-        "Zieht einen zufälligen Fluch."
-      )
-    );
-  } else {
-    result.appendChild(
-      createElement(
-        "p",
-        "curse-result-description",
-        "Noch wurden keine Flüche eingetragen."
-      )
-    );
-  }
-
-  const drawButton = createButton(
-    "Fluch ziehen",
-    "main-button curse-draw-button",
-    () => drawCurse(result)
-  );
-  drawButton.disabled = curses.length === 0;
-
-  modal.append(
-    closeButton,
-    createElement("p", "chapter-label", "Schicksal"),
-    createElement("h2", "", "Flüche"),
-    result,
-    drawButton
-  );
-
-  overlay.appendChild(modal);
-  overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) {
-      closeCurseModal();
-    }
-  });
-
-  document.body.classList.add("modal-open");
-  document.body.appendChild(overlay);
-  closeButton.focus();
-}
-
-
-function drawCurse(result) {
-  if (curses.length === 0) {
-    return;
-  }
-
-  const curse = curses[
-    Math.floor(Math.random() * curses.length)
-  ];
-
-  result.className = "curse-result curse-result-active";
-  result.innerHTML = "";
-  result.append(
-    createElement("strong", "curse-result-title", curse.title),
-    createElement(
-      "p",
-      "curse-result-description",
-      curse.description
-    )
-  );
-}
-
-
-function closeCurseModal() {
-  const overlay = document.querySelector(
-    ".curse-modal-overlay"
-  );
-
-  if (overlay) {
-    overlay.remove();
-  }
-
-  document.body.classList.remove("modal-open");
-}
-
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeCurseModal();
-  }
-});
 
 
 /* =========================================================
